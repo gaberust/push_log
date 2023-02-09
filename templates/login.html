@@ -1,0 +1,33 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <title>Login</title>
+
+        <link href="{% static 'assets/css/bootstrap.min.css' %}" rel="stylesheet">
+        <link href="{% static 'assets/css/signin.css' %}" rel="stylesheet">
+    </head>
+    <body>
+        <form class="form-signin" method="POST">
+            {% csrf_token %}
+            {% if next %}
+                <input name="next" type="hidden" value="{{ next }}">
+            {% endif %}
+            {% if login_failed %}
+                <div class="alert alert-dismissible alert-danger">
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    Incorrect username and/or password. Please try again.
+                </div>
+            {% endif %}
+            <h1 class="h3 mb-3 font-weight-normal">Login</h1>
+            <input name="username" type="text" id="inputUsername" class="form-control" placeholder="Username" required
+                   autofocus value="{{ username }}">
+            <input name="password" type="password" id="inputPassword" class="form-control" placeholder="Password"
+                   required value="{{ password }}">
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+        </form>
+    </body>
+</html>

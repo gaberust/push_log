@@ -1,0 +1,80 @@
+{% extends 'layout.html' %}
+{% block content %}
+    <h1 class="my-3">Reports</h1>
+    <form id="filterForm">
+        <div class="row g-4 align-items-center">
+            <div class="col-auto">
+                <label for="inputLimit">Limit Per Page:</label>
+                <input name="limit" id="inputLimit" type="number" class="form-control mt-1" placeholder="50"
+                       value="{{ limit }}">
+            </div>
+            <div class="col-auto">
+                <label for="inputDeviceId">Device ID:</label>
+                <input name="device_id" id="inputDeviceId" type="number" class="form-control mt-1"
+                       placeholder="Device ID" value="{{ device_id }}">
+            </div>
+            <div class="col-auto">
+                <label for="inputStartDate">Start Date (MM-DD-YYYY):</label>
+                <input name="start_date" id="inputStartDate" type="text" class="form-control mt-1"
+                       placeholder="MM-DD-YYYY" {% if start_date %}value="{{ start_date }}"{% endif %}>
+            </div>
+            <div class="col-auto">
+                <label for="inputEndDate">End Date (MM-DD-YYYY):</label>
+                <input name="end_date" id="inputEndDate" type="text" class="form-control mt-1" placeholder="MM-DD-YYYY"
+                       {% if end_date %}value="{{ end_date }}"{% endif %}>
+            </div>
+        </div>
+        <input name="page" type="hidden" id="inputPage" value="{{ page }}">
+        <button type="submit" class="my-3 btn btn-primary">Filter</button>
+    </form>
+    <p>Showing {{ results|length }} of {{ total }} reports.</p>
+    <table class="table table-hover">
+        <thead>
+            <tr class="table-active">
+                <th scope="col">Device</th>
+                <th scope="col">Time</th>
+                <th scope="col">Message</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if results %}
+                {% for report in results %}
+                    <tr>
+                        <th scope="row">{{ report.device }}</th>
+                        <td>{{ report.reported_at }}</td>
+                        <td>{{ report.message }}</td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr height="100px">
+                    <td colspan="3" class="text-center align-middle">No results available.</td>
+                </tr>
+            {%  endif %}
+        </tbody>
+    </table>
+    {% if max_page > 1 %}
+        <div class="mt-2">
+            <ul class="pagination pagination-lg">
+                {% if prev_page %}
+                    <li class="page-item">
+                        <a class="page-link" href="javascript:paginate({{ page }} - 1);">Prev</a>
+                    </li>
+                {% endif %}
+                <li class="page-item active disabled">
+                    <a class="page-link" href="#">{{ page }}</a>
+                </li>
+                {% if next_page %}
+                    <li class="page-item">
+                        <a class="page-link" href="javascript:paginate({{ page }} + 1);">Next</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    {% endif %}
+    <script>
+        function paginate(page) {
+            document.getElementById('inputPage').value = page;
+            document.getElementById('filterForm').submit();
+        }
+    </script>
+{% endblock %}

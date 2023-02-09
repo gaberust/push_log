@@ -1,0 +1,169 @@
+{% extends 'layout.html' %}
+{% block content %}
+    {% if empty_name %}
+        <div class="alert alert-dismissible alert-danger">
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            Device name cannot be empty.
+        </div>
+    {% endif %}
+    <h1 class="my-3">Devices</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="row g-2 align-items-center mb-3">
+            <div class="col-auto">
+                <label for="inputName">Name:</label>
+                <input name="name" id="inputName" type="text" class="form-control mt-1">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary mt-4">Add Device</button>
+            </div>
+        </div>
+    </form>
+    <table class="table table-hover">
+        <thead>
+            <tr class="table-active">
+                <th scope="col">ID</th>
+                <th scope="col">Name</th>
+                <th scope="col">Reports</th>
+                <th scope="col">Key</th>
+                <th scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if devices %}
+                {% for device in devices %}
+                    <tr>
+                        <th scope="row">{{ device.id }}</th>
+                        <td>{{ device.name }}</td>
+                        <td>{{ device.report_set|length }}</td>
+                        <td style="word-wrap: break-word;min-width: 160px;max-width: 600px;">{{ device.key }}</td>
+                        <td>
+                            <div class="row g-3 align-items-center">
+                                <button type="button" class="btn btn-success mx-1 col-auto" data-bs-toggle="modal"
+                                        data-bs-target="#regenerateModal" data-bs-deviceid="{{ device.id }}"
+                                        data-bs-devicename="{{ device.name }}">
+                                    Regenerate
+                                </button>
+                                <button type="button" class="btn btn-primary mx-1 col-auto" data-bs-toggle="modal"
+                                        data-bs-target="#editModal" data-bs-deviceid="{{ device.id }}"
+                                        data-bs-devicename="{{ device.name }}">
+                                    Edit
+                                </button>
+                                <button type="button" class="btn btn-danger mx-1 col-auto" data-bs-toggle="modal"
+                                        data-bs-target="#deleteModal" data-bs-deviceid="{{ device.id }}"
+                                        data-bs-devicename="{{ device.name }}">
+                                    Delete
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr height="100px">
+                    <td colspan="5" class="text-center align-middle">No devices available.</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+    <div class="modal fade" id="regenerateModal" tabindex="-1" aria-labelledby="regenerateModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="regenerateModalLabel">Confirm Key Regeneration</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to regenerate the key for <span id="regenerateModalDeviceName">
+                    </span>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <form action="{% url 'regenerate_device_key' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="device_id" id="deviceID" value="">
+                        <button type="submit" class="btn btn-success">Regenerate</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form action="{% url 'edit_device_name' %}" method="POST">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editModalLabel">Edit Device Name</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="editModalDeviceName" class="col-form-label">Name:</label>
+                            <input name="device_name" type="text" class="form-control" id="editModalDeviceName">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        {% csrf_token %}
+                        <input type="hidden" name="device_id" id="deviceID">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Edit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Confirm Device Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete <span id="deleteModalDeviceName"></span>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <form action="{% url 'delete_device' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="device_id" id="deviceID" value="">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const regenerateModal = document.getElementById('regenerateModal');
+        regenerateModal.addEventListener('show.bs.modal', event => {
+            const button = event.relatedTarget;
+            const deviceID = button.getAttribute('data-bs-deviceid');
+            const deviceName = button.getAttribute('data-bs-deviceName');
+            const modalIDInput = regenerateModal.querySelector('#deviceID');
+            const modalNameSpan = regenerateModal.querySelector('#regenerateModalDeviceName');
+            modalIDInput.value = deviceID;
+            modalNameSpan.textContent = deviceName;
+        });
+
+        const editModal = document.getElementById('editModal');
+        editModal.addEventListener('show.bs.modal', event => {
+            const button = event.relatedTarget;
+            const deviceID = button.getAttribute('data-bs-deviceid');
+            const deviceName = button.getAttribute('data-bs-deviceName');
+            const modalIDInput = editModal.querySelector('#deviceID');
+            const modalNameInput = editModal.querySelector('#editModalDeviceName');
+            modalIDInput.value = deviceID;
+            modalNameInput.value = deviceName;
+        });
+
+        const deleteModal = document.getElementById('deleteModal');
+        deleteModal.addEventListener('show.bs.modal', event => {
+            const button = event.relatedTarget;
+            const deviceID = button.getAttribute('data-bs-deviceid');
+            const deviceName = button.getAttribute('data-bs-devicename');
+            const modalIDInput = deleteModal.querySelector('#deviceID');
+            const modalNameSpan = deleteModal.querySelector('#deleteModalDeviceName');
+            modalIDInput.value = deviceID;
+            modalNameSpan.textContent = deviceName;
+        });
+    </script>
+{% endblock %}
