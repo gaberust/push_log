@@ -35,7 +35,7 @@
                     <tr>
                         <th scope="row">{{ device.id }}</th>
                         <td>{{ device.name }}</td>
-                        <td>{{ device.report_set|length }}</td>
+                        <td>{{ device.report_set.count }}</td>
                         <td style="word-wrap: break-word;min-width: 160px;max-width: 600px;">{{ device.key }}</td>
                         <td>
                             <div class="row g-3 align-items-center">
